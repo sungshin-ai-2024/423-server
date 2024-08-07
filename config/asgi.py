@@ -23,7 +23,7 @@ from django.urls import re_path
 
 from logger.consumers import SendGroupConsumer, ReceiveGroupConsumer
 
-
+#routing
 websocket_urlpatterns = [
     re_path(r"ws/logger/send/", SendGroupConsumer.as_asgi()),
     re_path(r"ws/logger/receive/", ReceiveGroupConsumer.as_asgi()),

@@ -131,8 +131,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CHANNEL_LAYERS = {
     "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer"
-    }
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("210.125.96.132", 6379)],  # Redis 서버의 IP 주소와 포트 (로컬)
+        },
+    },
 }
 
 # Django REST framework configuration
