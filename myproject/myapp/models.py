@@ -1,6 +1,4 @@
-'''
-models.py
-'''
+# models.py
 from django.db.models import Max
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
@@ -37,9 +35,9 @@ class Profile(models.Model):
     phone_number = models.CharField(max_length=15)
     birth_date = models.DateField()
     sex = models.CharField(max_length=1, choices=[('남', 'Male'), ('여', 'Female')])
+    zipcode = models.CharField(max_length=10)  # 추가된 필드
     address = models.CharField(max_length=255)
     detailed_address = models.CharField(max_length=255)
-
 
 class Guardian(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)

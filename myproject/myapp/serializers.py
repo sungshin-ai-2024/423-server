@@ -1,8 +1,4 @@
-'''
-serializers.py
-'''
-
-
+# serializers.py
 from rest_framework import serializers
 from django.contrib.auth import authenticate
 from .models import User, Profile, Guardian
@@ -10,7 +6,7 @@ from .models import User, Profile, Guardian
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
-        fields = ['signup_name', 'phone_number', 'birth_date', 'sex', 'address', 'detailed_address']
+        fields = ['signup_name', 'phone_number', 'birth_date', 'sex', 'zipcode', 'address', 'detailed_address']  # 수정된 부분
 
 class UserSerializer(serializers.ModelSerializer):
     profile = ProfileSerializer(required=True)
@@ -43,7 +39,6 @@ class LoginSerializer(serializers.Serializer):
         else:
             raise serializers.ValidationError("Must include 'signup_id' and 'password'.")
         return data
-
 
 class GuardianSerializer(serializers.ModelSerializer):
     class Meta:
