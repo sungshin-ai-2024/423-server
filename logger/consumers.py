@@ -153,8 +153,10 @@ class SendGroupConsumer(AsyncWebsocketConsumer):
         ppg_data_str = data.get('ppg')
         acc_data_str = data.get('acc')
         bpm_data = data.get('bpm')
+        step_count = data.get('step_count')
 
         logger.debug(f"Received bpm_data: {bpm_data}")
+        logger.debug(f"Received step_count: {step_count}")
 
         try:
             ppg_data = json.loads(ppg_data_str)
@@ -180,6 +182,11 @@ class SendGroupConsumer(AsyncWebsocketConsumer):
         if bpm_data is not None and not isinstance(bpm_data, (int, float)):
             logger.error('bpm_data is not a valid number')
             await self.send(text_data=json.dumps({'error': 'bpm_data is not a valid number'}))
+            return
+
+        if step_count is not None and not isinstance(step_count, int):
+            logger.error('step_count is not a valid integer')
+            await self.send(text_data=json.dumps({'error': 'step_count is not a valid integer'}))
             return
 
         base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -233,6 +240,11 @@ class SendGroupConsumer(AsyncWebsocketConsumer):
                 cache.set(f'bpm_data_{uuid}', bpm_data, timeout=3600)
                 logger.debug(f"Stored bpm_data in cache: {bpm_data}")
 
+            # 누적 걸음수를 캐시에 저장
+            if step_count is not None:
+                cache.set(f'step_count_{uuid}', step_count, timeout=3600)
+                logger.debug(f"Stored step_count in cache: {step_count}")
+
             # acc
             cache.set(f'acc_data_storage_{uuid}', acc_data, timeout=3600)
             cache.set(f'prediction_results_acc_{uuid}', predicted_classes_acc.tolist(), timeout=3600)
@@ -248,7 +260,8 @@ class SendGroupConsumer(AsyncWebsocketConsumer):
                 'acc_predictions': predicted_classes_acc.tolist(),
                 'acc_data': acc_data,
                 'svm_acc_data': svm_acc_data,
-                'bpm_data': bpm_data
+                'bpm_data': bpm_data,
+                'step_count': step_count
             }))
             logger.info(f"Sent row ppg: {ppg_data}")
 
@@ -265,6 +278,7 @@ class SendGroupConsumer(AsyncWebsocketConsumer):
                         'acc_data': acc_data,
                         'svm_acc_data': svm_acc_data,
                         'bpm_data': bpm_data,
+                        'step_count': step_count
                     })
                 }
             )
