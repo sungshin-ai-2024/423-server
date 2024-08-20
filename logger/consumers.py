@@ -62,7 +62,7 @@ class PpgModelPredictor:
                 logger.error('ppg_data_list is empty or invalid')
                 return None, None, 'ppg_data_list is empty or invalid'
 
-            test_data_list = [[1] + ppg_data_list]
+            test_data_list = [ppg_data_list]
 
             test_filtered = preprocessing(data=test_data_list, chunk_size=self.chunk_size, overlap=self.overlap)
             logger.debug(f"DEBUG: test_filtered = {test_filtered}")
@@ -90,7 +90,7 @@ class PpgModelPredictor:
             logger.debug(f"Shape of y_test_twelve_sec: {np.array(y_test_twelve_sec).shape}")
 
             predictor = PeakPredictor(self.model_path, x_test_twelve_sec)
-            y_test_twelve_sec = predictor.plot_peaks()
+            y_test_twelve_sec = predictor.ppg_prediction()
 
             if not y_test_twelve_sec:
                 logger.error('Prediction resulted in empty data.')
@@ -152,8 +152,9 @@ class SendGroupConsumer(AsyncWebsocketConsumer):
         uuid = data.get('uuid')
         ppg_data_str = data.get('ppg')
         acc_data_str = data.get('acc')
+        bpm_data = data.get('bpm')
 
-        logger.debug(f"Received ppg_data (raw string): {ppg_data_str}")
+        logger.debug(f"Received bpm_data: {bpm_data}")
 
         try:
             ppg_data = json.loads(ppg_data_str)
@@ -174,6 +175,11 @@ class SendGroupConsumer(AsyncWebsocketConsumer):
         if not isinstance(acc_data, list):
             logger.error('acc_data is not a list')
             await self.send(text_data=json.dumps({'error': 'acc_data is not a list'}))
+            return
+
+        if bpm_data is not None and not isinstance(bpm_data, (int, float)):
+            logger.error('bpm_data is not a valid number')
+            await self.send(text_data=json.dumps({'error': 'bpm_data is not a valid number'}))
             return
 
         base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -222,6 +228,11 @@ class SendGroupConsumer(AsyncWebsocketConsumer):
             cache.set(f'prediction_results_{uuid}', y_test_twelve_sec, timeout=3600)
             logger.debug(f"Stored normalized ppg_data in cache: {cache.get(f'ppg_data_storage_{uuid}')}")
 
+            # BPM 데이터 캐시에 저장
+            if bpm_data is not None:
+                cache.set(f'bpm_data_{uuid}', bpm_data, timeout=3600)
+                logger.debug(f"Stored bpm_data in cache: {bpm_data}")
+
             # acc
             cache.set(f'acc_data_storage_{uuid}', acc_data, timeout=3600)
             cache.set(f'prediction_results_acc_{uuid}', predicted_classes_acc.tolist(), timeout=3600)
@@ -236,7 +247,8 @@ class SendGroupConsumer(AsyncWebsocketConsumer):
                 'ppg_data': ppg_data,
                 'acc_predictions': predicted_classes_acc.tolist(),
                 'acc_data': acc_data,
-                'svm_acc_data': svm_acc_data
+                'svm_acc_data': svm_acc_data,
+                'bpm_data': bpm_data
             }))
             logger.info(f"Sent row ppg: {ppg_data}")
 
@@ -251,7 +263,8 @@ class SendGroupConsumer(AsyncWebsocketConsumer):
                         'ppg_data': ppg_data,
                         'acc_predictions': predicted_classes_acc.tolist(),
                         'acc_data': acc_data,
-                        'svm_acc_data': svm_acc_data
+                        'svm_acc_data': svm_acc_data,
+                        'bpm_data': bpm_data,
                     })
                 }
             )
