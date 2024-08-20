@@ -35,7 +35,7 @@ class Profile(models.Model):
     phone_number = models.CharField(max_length=15)
     birth_date = models.DateField()
     sex = models.CharField(max_length=1, choices=[('남', 'Male'), ('여', 'Female')])
-    zipcode = models.CharField(max_length=10)  # 추가된 필드
+    zipcode = models.CharField(max_length=10)
     address = models.CharField(max_length=255)
     detailed_address = models.CharField(max_length=255)
 
@@ -44,10 +44,15 @@ class Guardian(models.Model):
     guardian_id = models.IntegerField(null=True, blank=True)
     name = models.CharField(max_length=100)
     phone_number = models.CharField(max_length=15)
-    relationship = models.CharField(max_length=10, choices=[
+    RELATIONSHIP_CHOICES = [
         ('자녀', '자녀'),
         ('간병인', '간병인'),
-    ])
+        ('배우자', '배우자'),
+        ('형제', '형제'),
+        ('손자녀', '손자녀'),
+        ('기타', '기타'),
+    ]
+    relationship = models.CharField(max_length=10, choices=RELATIONSHIP_CHOICES)
 
     class Meta:
         unique_together = ('user', 'guardian_id')
