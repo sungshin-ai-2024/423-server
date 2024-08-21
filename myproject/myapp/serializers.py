@@ -17,8 +17,8 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ('signup_id', 'password', 'profile')
         extra_kwargs = {
+            'signup_id': {'required': True},  # signup_id 필드를 필수 입력으로 설정
             'password': {'write_only': True},
-            'signup_id': {'read_only': True}  # Make signup_id read-only to prevent updates
         }
 
     def create(self, validated_data):
@@ -68,5 +68,11 @@ class LoginSerializer(serializers.Serializer):
 class GuardianSerializer(serializers.ModelSerializer):
     class Meta:
         model = Guardian
-        fields = ['guardian_id', 'name', 'phone_number', 'relationship', 'user']
-        read_only_fields = ['user', 'guardian_id']
+        fields = ['name', 'relationship', 'phone_number']
+        read_only_fields = ['user']  # user 필드는 읽기 전용으로 설정
+
+    def create(self, validated_data):
+        # 요청에서 user를 가져와 설정
+        user = self.context['request'].user
+        guardian = Guardian.objects.create(user=user, **validated_data)
+        return guardian

@@ -1,7 +1,7 @@
-# models.py
 from django.db.models import Max
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
-from django.db import models
+from django.db import models, transaction
+from django.utils import timezone
 
 class UserManager(BaseUserManager):
     def create_user(self, signup_id, password=None, **extra_fields):
@@ -21,23 +21,21 @@ class User(AbstractBaseUser, PermissionsMixin):
     signup_id = models.CharField(max_length=50, unique=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
+    is_superuser = models.BooleanField(default=False)
+
     objects = UserManager()
 
     USERNAME_FIELD = 'signup_id'
-    REQUIRED_FIELDS = []
-
-    def __str__(self):
-        return self.signup_id
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     signup_name = models.CharField(max_length=255, default='')
-    phone_number = models.CharField(max_length=15)
-    birth_date = models.DateField()
-    sex = models.CharField(max_length=1, choices=[('남', 'Male'), ('여', 'Female')])
-    zipcode = models.CharField(max_length=10)
-    address = models.CharField(max_length=255)
-    detailed_address = models.CharField(max_length=255)
+    phone_number = models.CharField(max_length=15, blank=True, null=True)
+    birth_date = models.DateField(blank=True, null=True)
+    sex = models.CharField(max_length=1, choices=[('남', 'Male'), ('여', 'Female')], blank=True, null=True)
+    zipcode = models.CharField(max_length=10, blank=True, null=True)
+    address = models.CharField(max_length=255, blank=True, null=True)
+    detailed_address = models.CharField(max_length=255, blank=True, null=True)
 
 class Guardian(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
