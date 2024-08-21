@@ -65,14 +65,13 @@ class LoginSerializer(serializers.Serializer):
             raise serializers.ValidationError("Must include 'signup_id' and 'password'.")
         return data
 
+
 class GuardianSerializer(serializers.ModelSerializer):
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
     class Meta:
         model = Guardian
-        fields = ['name', 'relationship', 'phone_number']
-        read_only_fields = ['user']  # user 필드는 읽기 전용으로 설정
+        fields = ['id', 'user', 'name', 'phone_number', 'relationship']
 
     def create(self, validated_data):
-        # 요청에서 user를 가져와 설정
-        user = self.context['request'].user
-        guardian = Guardian.objects.create(user=user, **validated_data)
-        return guardian
+        return Guardian.objects.create(**validated_data)

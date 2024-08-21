@@ -9,10 +9,13 @@ api_patterns = [
     path('signup/', RegisterView.as_view(), name='signup'),
     path('login/', LoginView.as_view(), name='login'),
     path('delete_account/', DeleteAccountView.as_view(), name='delete_account'),
-    path('profile/', UserProfileView.as_view(), name='user-profile'),  # Updated route for user profile
+    path('profile/', UserProfileView.as_view(), name='user-profile'),
+    path('guardians/add/', GuardianViewSet.as_view({'post': 'add_guardian'}), name='add-guardian'),
+    path('guardians/delete/', GuardianViewSet.as_view({'delete': 'delete_guardian'}), name='delete-guardian'),
     path('', include(router.urls)),
 ]
 
 urlpatterns = [
     path('', include(api_patterns))
+
 ]
