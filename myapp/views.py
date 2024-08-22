@@ -1,8 +1,9 @@
 '''
 views.py
 '''
-
+from django.shortcuts import get_object_or_404
 from rest_framework import generics, status, viewsets
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.authtoken.models import Token
@@ -38,7 +39,6 @@ class LoginView(generics.GenericAPIView):
         return Response({"token": token.key})
 
 
-
 class GuardianViewSet(viewsets.ModelViewSet):
     serializer_class = GuardianSerializer
     permission_classes = [IsAuthenticated]
@@ -49,6 +49,48 @@ class GuardianViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save()
 
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(user=request.user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(methods=['DELETE'], detail=False, url_path='delete')
+    def delete_guardian(self, request):
+        name = request.query_params.get('name')
+        phone_number = request.query_params.get('phone_number')
+
+        if not name or not phone_number:
+            return Response({"detail": "Both name and phone_number are required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            guardian = Guardian.objects.get(user=request.user, name=name, phone_number=phone_number)
+        except Guardian.DoesNotExist:
+            return Response({"detail": "Guardian not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        guardian.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(methods=['PATCH'], detail=False, url_path='update')
+    def update_guardian(self, request):
+        name = request.data.get('old_name')
+        phone_number = request.data.get('old_phone_number')
+
+        if not name or not phone_number:
+            return Response({"detail": "Both old_name and old_phone_number are required."},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            guardian = Guardian.objects.get(user=request.user, name=name, phone_number=phone_number)
+        except Guardian.DoesNotExist:
+            return Response({"detail": "Guardian not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = self.get_serializer(guardian, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 class DeleteAccountView(APIView):
     permission_classes = [IsAuthenticated]
 

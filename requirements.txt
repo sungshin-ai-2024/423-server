@@ -33,3 +33,4 @@ tensorboard==2.17.0
 tensorflow==2.17.0
 tensorflow-intel==2.17.0
 wheel==0.43.0
+django_cors_headers==4.4.0
