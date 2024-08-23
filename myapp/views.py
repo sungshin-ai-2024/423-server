@@ -91,13 +91,6 @@ class GuardianViewSet(viewsets.ModelViewSet):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-class DeleteAccountView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def delete(self, request, *args, **kwargs):
-        user = request.user
-        user.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
 
 class UserProfileView(APIView):
     permission_classes = [IsAuthenticated]
@@ -128,3 +121,11 @@ class UserProfileView(APIView):
             return Response(serializer.data)
         else:
             return Response({"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+            
+class DeleteAccountView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request):
+        user = request.user
+        user.delete()
+        return Response({"detail": "User account has been successfully deleted."}, status=status.HTTP_204_NO_CONTENT)
