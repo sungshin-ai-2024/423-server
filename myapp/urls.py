@@ -12,6 +12,7 @@ api_patterns = [
     path('profile/', UserProfileView.as_view(), name='user-profile'),
     path('guardians/add/', GuardianViewSet.as_view({'post': 'add_guardian'}), name='add-guardian'),
     path('guardians/delete/', GuardianViewSet.as_view({'delete': 'delete_guardian'}), name='delete-guardian'),
+    path('delete-account/', DeleteAccountView.as_view(), name='delete-account'), 
     path('', include(router.urls)),
 ]
 
